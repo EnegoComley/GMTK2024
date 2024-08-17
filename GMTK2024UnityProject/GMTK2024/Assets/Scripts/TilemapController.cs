@@ -70,6 +70,7 @@ public class TilemapController : MonoBehaviour
         LinkedDepthListNode.myTilemapController = this;
         startingNode.GetNext().GetNext().GetNext().GetNext();
         startingNode.GetPrev().GetPrev();
+        PlayerController.currentNode = startingNode;
         
         
     }
