@@ -7,7 +7,12 @@ public class TilemapController : MonoBehaviour
     public GameObject startingGrid;
     public Vector3 fractalScale;
     public Vector3 fractalTranslation;
+    public BoundsInt mapGapBounds;
+    public CorrosionGridController startingCorrosionGrid;
+    public CorrosionGridController[] LargerCorrosionGrids;
+    public CorrosionGridController[] SmallerCorrosionGrids;
     public LinkedDepthListNode startingNode;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -29,7 +34,7 @@ public class TilemapController : MonoBehaviour
         
         // Iterate through all the tiles in the tilemap and store the maximum and minimum x and y values that have a tile
         mapGap.CompressBounds();
-        BoundsInt mapGapBounds = mapGap.cellBounds;
+        mapGapBounds = mapGap.cellBounds;
         BoundsInt[] allTilemapBounds = new BoundsInt[startingTilemaps.Length];
         for (int i = 0; i < startingTilemaps.Length; i++)
         {
@@ -61,6 +66,7 @@ public class TilemapController : MonoBehaviour
         }
         Vector3Int allTilesMapSize = allTilesMapMax - allTilesMapMin;
         fractalScale = new Vector3(mapGapSize.x / (float)allTilesMapSize.x, mapGapSize.y / (float)allTilesMapSize.y, 1);
+        
         fractalTranslation = mapGap.localBounds.center - new Vector3((allTilesMapMin.x + allTilesMapSize.x / 2) * fractalScale.x, (allTilesMapMin.y + allTilesMapSize.y / 2) * fractalScale.y, 0);
         mapGap.ClearAllTiles();
         startingNode = new LinkedDepthListNode(0);
@@ -68,9 +74,12 @@ public class TilemapController : MonoBehaviour
         startingNode.currentFractalTranslation = new Vector3();
         startingNode.myGrid = startingGrid;
         LinkedDepthListNode.myTilemapController = this;
+        startingNode.SetMapGapBounds();
         startingNode.GetNext().GetNext().GetNext().GetNext();
         startingNode.GetPrev().GetPrev();
         PlayerController.currentNode = startingNode;
+        
+        
         
         
     }
@@ -97,8 +106,11 @@ public class LinkedDepthListNode
     public int depth;
     public Vector3 currentFractalScale;
     public Vector3 currentFractalTranslation;
+    public Vector3 mapGapMin;
+    public Vector3 mapGapMax;
     public static TilemapController myTilemapController;
     public GameObject myGrid;
+    CorrosionGridController myCorrosionGrid;
     
     public LinkedDepthListNode(int depth)
     {
@@ -114,6 +126,19 @@ public class LinkedDepthListNode
             next.currentFractalScale = new Vector3(currentFractalScale.x * myTilemapController.fractalScale.x, currentFractalScale.y * myTilemapController.fractalScale.y, 1);
             next.currentFractalTranslation = new Vector3(currentFractalTranslation.x + myTilemapController.fractalTranslation.x * currentFractalScale.x, currentFractalTranslation.y + myTilemapController.fractalTranslation.y * currentFractalScale.x, 0);
             next.myGrid = myTilemapController.CreateNewLayer(next.currentFractalScale, next.currentFractalTranslation);
+            next.SetMapGapBounds();
+            
+            if (depth < myTilemapController.SmallerCorrosionGrids.Length)
+            {
+                next.myCorrosionGrid = myTilemapController.SmallerCorrosionGrids[depth];
+                if (next.myCorrosionGrid != null)
+                {
+                    next.myCorrosionGrid.gameObject.transform.localScale = next.currentFractalScale;
+                    next.myCorrosionGrid.gameObject.transform.localPosition = next.currentFractalTranslation;
+                }
+            }
+            
+            
         }
         return next;
     }
@@ -127,9 +152,25 @@ public class LinkedDepthListNode
             prev.currentFractalScale = new Vector3(currentFractalScale.x / myTilemapController.fractalScale.x, currentFractalScale.y / myTilemapController.fractalScale.y, 1);
             prev.currentFractalTranslation = new Vector3(currentFractalTranslation.x - (myTilemapController.fractalTranslation.x) * prev.currentFractalScale.x, currentFractalTranslation.y - (myTilemapController.fractalTranslation.y) * prev.currentFractalScale.y, 0);
             prev.myGrid = myTilemapController.CreateNewLayer(prev.currentFractalScale, prev.currentFractalTranslation);
+            prev.SetMapGapBounds();
+            if (-depth < myTilemapController.LargerCorrosionGrids.Length)
+            {
+                prev.myCorrosionGrid = myTilemapController.LargerCorrosionGrids[-depth];
+                if (next.myCorrosionGrid != null)
+                {
+                    prev.myCorrosionGrid.gameObject.transform.localScale = prev.currentFractalScale;
+                    prev.myCorrosionGrid.gameObject.transform.localPosition = prev.currentFractalTranslation;
+                }
+            }
         }
         return prev;
     }
     
     
+
+    public void SetMapGapBounds()
+    {
+        mapGapMin = currentFractalTranslation + Vector3.Scale(myTilemapController.mapGapBounds.min, currentFractalScale);
+        mapGapMax = currentFractalTranslation + Vector3.Scale(myTilemapController.mapGapBounds.max, currentFractalScale);
+    }
 }

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Name: Corrosion1
+  m_EditorClassIdentifier: 
+  m_AnimatedSprites:
+  - {fileID: -3739957133524300147, guid: 5e59eeaed3403b740af9816cf4228417, type: 3}
+  - {fileID: 4009355068965086491, guid: 88980b8f72e5a294687bf27394f0f12e, type: 3}
+  - {fileID: -5776421600631150107, guid: 6e75c740a070c654890cc3b245aa214b, type: 3}
+  - {fileID: 3410439384014351281, guid: d236d04c392dbb14998bf045a6d11825, type: 3}
+  - {fileID: -15056097725527025, guid: 8fc94d9723d61664285514ecf9d810f5, type: 3}
+  - {fileID: -1303488210474810115, guid: 96e655483b70a534483799af23ac48ec, type: 3}
+  - {fileID: 8486031539342236817, guid: 54420017f3ee3b34dbf17d7dd7eb62f7, type: 3}
+  - {fileID: -3181438773050836323, guid: a4ba0b9fe14310047b20768a1a903073, type: 3}
+  - {fileID: -2870398155833419731, guid: 14c268c21b18fc34db5e3ef3115fbdc3, type: 3}
+  - {fileID: 694036048686144334, guid: 7f0a7378d5e7e964aae8ef432ccbd00f, type: 3}
+  - {fileID: 1979239529630283305, guid: e40648403fb0c7e4a814e6415e3664ae, type: 3}
+  - {fileID: -7514906054742553019, guid: c84df843eef315347948b595f3c2519a, type: 3}
+  m_MinSpeed: 3
+  m_MaxSpeed: 5
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 2
+  m_TileAnimationFlags: 0
