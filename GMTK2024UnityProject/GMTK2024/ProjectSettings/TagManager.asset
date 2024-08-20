@@ -9,6 +9,9 @@ TagManager:
   - Bullet
   - Fire
   - Corrosion
+  - Block
+  - Electric Green
+  - Electric Red
   layers:
   - Default
   - TransparentFX

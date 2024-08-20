@@ -60,6 +60,8 @@ public class PlayerController : MonoBehaviour
             
         }
         
+        targetCameraSize += currentNode.currentFractalScale.y * -Input.mouseScrollDelta.y * 0.3f;
+        mainCamera.orthographicSize += currentNode.currentFractalScale.y * -Input.mouseScrollDelta.y * 0.3f;
         
     }
 
@@ -68,15 +70,46 @@ public class PlayerController : MonoBehaviour
         Vector3 playerCenter = transform.position + new Vector3(0.5f * currentNode.currentFractalScale.x, 0.5f * currentNode.currentFractalScale.y, 0);
         if (playerCenter.x >= currentNode.mapGapMin.x && playerCenter.x < currentNode.mapGapMax.x && playerCenter.y >= currentNode.mapGapMin.y && playerCenter.y < currentNode.mapGapMax.y)
         {
-            LinkedDepthListNode lastNode = currentNode;
-            currentNode = currentNode.GetNext();
-            ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            if (currentNode.depth < LinkedDepthListNode.tail.depth)
+            {
+                LinkedDepthListNode lastNode = currentNode;
+                currentNode = currentNode.GetNext();
+                ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            }
+            else
+            {
+                gameObject.transform.localScale = LinkedDepthListNode.head.GetPrev().currentFractalScale;
+                gameObject.transform.position = new Vector3(((gameObject.transform.position.x - currentNode.currentFractalTranslation.x)/currentNode.currentFractalScale.x) * LinkedDepthListNode.head.GetPrev().currentFractalScale.x + LinkedDepthListNode.head.GetPrev().currentFractalTranslation.x, ((gameObject.transform.position.y - currentNode.currentFractalTranslation.y)/currentNode.currentFractalScale.y) * LinkedDepthListNode.head.GetPrev().currentFractalScale.y + LinkedDepthListNode.head.GetPrev().currentFractalTranslation.y, 0);
+                mainCamera.orthographicSize = (mainCamera.orthographicSize/currentNode.currentFractalScale.y) * LinkedDepthListNode.head.GetPrev().currentFractalScale.y;
+                targetCameraSize = (targetCameraSize/currentNode.currentFractalScale.y) * LinkedDepthListNode.head.GetPrev().currentFractalScale.y;
+                mainCamera.transform.position = new Vector3(((mainCamera.transform.position.x - currentNode.currentFractalTranslation.x)/currentNode.currentFractalScale.x) * LinkedDepthListNode.head.GetPrev().currentFractalScale.x + LinkedDepthListNode.head.GetPrev().currentFractalTranslation.x, ((mainCamera.transform.position.y - currentNode.currentFractalTranslation.y)/currentNode.currentFractalScale.y) * LinkedDepthListNode.head.GetPrev().currentFractalScale.y + LinkedDepthListNode.head.GetPrev().currentFractalTranslation.y, -10);
+                currentNode = LinkedDepthListNode.head;
+                LinkedDepthListNode lastNode = currentNode.GetPrev();
+                
+                ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            }
+            
         }
         if (playerCenter.x < currentNode.GetPrev().mapGapMin.x || playerCenter.x >= currentNode.GetPrev().mapGapMax.x || playerCenter.y < currentNode.GetPrev().mapGapMin.y || playerCenter.y >= currentNode.GetPrev().mapGapMax.y)
         {
-            LinkedDepthListNode lastNode = currentNode;
-            currentNode = currentNode.GetPrev();
-            ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            if (currentNode.depth > LinkedDepthListNode.head.depth)
+            {
+                LinkedDepthListNode lastNode = currentNode;
+                currentNode = currentNode.GetPrev();
+                ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            }
+            else
+            {
+                gameObject.transform.localScale = LinkedDepthListNode.tail.GetPrev().currentFractalScale;
+                gameObject.transform.position = new Vector3(((gameObject.transform.position.x - currentNode.currentFractalTranslation.x)/currentNode.currentFractalScale.x) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.x + LinkedDepthListNode.tail.GetPrev().currentFractalTranslation.x, ((gameObject.transform.position.y - currentNode.currentFractalTranslation.y)/currentNode.currentFractalScale.y) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.y + LinkedDepthListNode.tail.GetPrev().currentFractalTranslation.y, 0);
+                mainCamera.orthographicSize = (mainCamera.orthographicSize/currentNode.currentFractalScale.y) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.y;
+                targetCameraSize = (targetCameraSize/currentNode.currentFractalScale.y) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.y;
+                mainCamera.transform.position = new Vector3(((mainCamera.transform.position.x - currentNode.currentFractalTranslation.x)/currentNode.currentFractalScale.x) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.x + LinkedDepthListNode.tail.GetPrev().currentFractalTranslation.x, ((mainCamera.transform.position.y - currentNode.currentFractalTranslation.y)/currentNode.currentFractalScale.y) * LinkedDepthListNode.tail.GetPrev().currentFractalScale.y + LinkedDepthListNode.tail.GetPrev().currentFractalTranslation.y, -10);
+                currentNode = LinkedDepthListNode.tail;
+                LinkedDepthListNode lastNode = currentNode.GetPrev();
+                
+                ScaleToNewLayer(lastNode, Vector3.Scale(myRigidbody2D.linearVelocity.normalized, lastNode.currentFractalScale));
+            }
         }
         if (Mathf.Abs(mainCamera.orthographicSize - targetCameraSize) > currentNode.currentFractalScale.y * 0.4)
         {
@@ -132,9 +165,6 @@ public class PlayerController : MonoBehaviour
 
     void ScaleToNewLayer(LinkedDepthListNode lastNode, Vector3 direction)
     {
-        //Vector3 playerCenter = transform.position + new Vector3(0.5f * lastNode.currentFractalScale.x, 0.5f * lastNode.currentFractalScale.y, 0);
-        //Vector3 newPlayerCenter = playerCenter + 0.5f * direction + 0.5f * new Vector3(currentNode.currentFractalScale.x * (direction.x/ lastNode.currentFractalScale.x), currentNode.currentFractalScale.y * (direction.y/ lastNode.currentFractalScale.y), 0);
-        //transform.position = newPlayerCenter - new Vector3(0.5f * currentNode.currentFractalScale.x, 0.5f * currentNode.currentFractalScale.y, 0);
         gameObject.transform.localScale = currentNode.currentFractalScale;
 
         Vector3 gridCenterPosition = currentNode.myGrid.GetComponent<Grid>().CellToWorld(new Vector3Int(0, 0, 0));

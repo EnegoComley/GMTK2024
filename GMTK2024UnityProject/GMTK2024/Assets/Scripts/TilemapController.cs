@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -12,6 +14,10 @@ public class TilemapController : MonoBehaviour
     public CorrosionGridController[] LargerCorrosionGrids;
     public CorrosionGridController[] SmallerCorrosionGrids;
     public LinkedDepthListNode startingNode;
+    public RectTransform rawImage;
+    public Camera screenCamera;
+
+    public List<ConnectedBlocks> connectedBlocks;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -74,16 +80,43 @@ public class TilemapController : MonoBehaviour
         startingNode.currentFractalTranslation = new Vector3();
         startingNode.myGrid = startingGrid;
         LinkedDepthListNode.myTilemapController = this;
+        connectedBlocks = new List<ConnectedBlocks>();
+        foreach (Block block in GetComponentsInChildren<Block>())
+        {
+            connectedBlocks.Add(new ConnectedBlocks(block, startingNode.currentFractalTranslation, block.transform.localScale));
+        }
+        
         startingNode.SetMapGapBounds();
-        startingNode.GetNext().GetNext().GetNext().GetNext();
-        startingNode.GetPrev().GetPrev();
+        LinkedDepthListNode generatorNode = startingNode;
+        for (int i = 0; i < SmallerCorrosionGrids.Length + 2; i++)
+        {
+            generatorNode = generatorNode.GetNext();
+        }
+
+        LinkedDepthListNode.tail = generatorNode;
+        generatorNode = startingNode;
+        for (int i = 0; i < LargerCorrosionGrids.Length + 2; i++)
+        {
+            generatorNode = generatorNode.GetPrev();
+        }
+        LinkedDepthListNode.head = generatorNode;
+        generatorNode.GetPrev().GetPrev().GetPrev();
         PlayerController.currentNode = startingNode;
         
-        
-        
+        screenCamera.orthographicSize = screenCamera.orthographicSize * LinkedDepthListNode.head.currentFractalScale.y;
+        screenCamera.transform.position = LinkedDepthListNode.head.currentFractalTranslation +
+                                          Vector3.Scale(LinkedDepthListNode.head.currentFractalScale,
+                                              screenCamera.transform.position);
+        rawImage.position = new Vector3(rawImage.position.x * LinkedDepthListNode.tail.currentFractalScale.x + LinkedDepthListNode.tail.currentFractalTranslation.x, rawImage.position.y * LinkedDepthListNode.tail.currentFractalScale.y + LinkedDepthListNode.tail.currentFractalTranslation.y, rawImage.position.z);
+        rawImage.sizeDelta = new Vector2(rawImage.sizeDelta.x * LinkedDepthListNode.tail.currentFractalScale.x, rawImage.sizeDelta.y * LinkedDepthListNode.tail.currentFractalScale.y);
         
     }
-
+    
+    public GameObject InstantiateSomething(GameObject prefab, Transform parent)
+    {
+        return Instantiate(prefab, parent);
+    }
+    
     // Update is called once per frame
     void Update()
     {
@@ -111,6 +144,8 @@ public class LinkedDepthListNode
     public static TilemapController myTilemapController;
     public GameObject myGrid;
     CorrosionGridController myCorrosionGrid;
+    public static LinkedDepthListNode head;
+    public static LinkedDepthListNode tail;
     
     public LinkedDepthListNode(int depth)
     {
@@ -137,8 +172,17 @@ public class LinkedDepthListNode
                     next.myCorrosionGrid.gameObject.transform.localPosition = next.currentFractalTranslation;
                 }
             }
-            
-            
+
+            foreach (ConnectedBlocks connectedBlock in myTilemapController.connectedBlocks)
+            {
+                Block newBlock = myTilemapController.InstantiateSomething(connectedBlock.blocks[0].Item1.gameObject, myTilemapController.transform).GetComponent<Block>();
+                newBlock.transform.position = Vector3.Scale(connectedBlock.blocks[0].Item1.transform.position, next.currentFractalScale) + next.currentFractalTranslation;
+                newBlock.transform.localScale = Vector3.Scale(next.currentFractalScale, connectedBlock.startScale);                
+                newBlock.myController = connectedBlock;
+                newBlock.myBlockID = connectedBlock.blocks.Count;
+                connectedBlock.blocks.Add(new Tuple<Block, Vector3, Vector3>(newBlock, next.currentFractalTranslation, next.currentFractalScale));
+            }
+
         }
         return next;
     }
@@ -162,6 +206,16 @@ public class LinkedDepthListNode
                     prev.myCorrosionGrid.gameObject.transform.localPosition = prev.currentFractalTranslation;
                 }
             }
+            
+            foreach (ConnectedBlocks connectedBlock in myTilemapController.connectedBlocks)
+            {
+                Block newBlock = myTilemapController.InstantiateSomething(connectedBlock.blocks[0].Item1.gameObject, myTilemapController.transform).GetComponent<Block>();
+                newBlock.transform.position = Vector3.Scale(connectedBlock.blocks[0].Item1.transform.position, prev.currentFractalScale) + prev.currentFractalTranslation;
+                newBlock.transform.localScale = Vector3.Scale(prev.currentFractalScale, connectedBlock.startScale);
+                newBlock.myController = connectedBlock;
+                newBlock.myBlockID = connectedBlock.blocks.Count;
+                connectedBlock.blocks.Add(new Tuple<Block, Vector3, Vector3>(newBlock, prev.currentFractalTranslation, prev.currentFractalScale));
+            }
         }
         return prev;
     }
@@ -172,5 +226,55 @@ public class LinkedDepthListNode
     {
         mapGapMin = currentFractalTranslation + Vector3.Scale(myTilemapController.mapGapBounds.min, currentFractalScale);
         mapGapMax = currentFractalTranslation + Vector3.Scale(myTilemapController.mapGapBounds.max, currentFractalScale);
+    }
+}
+
+public class ConnectedBlocks
+{
+    
+    public List<Tuple<Block, Vector3, Vector3>> blocks; //Block, position, scale
+    public Vector3 startScale;
+    public Vector2 targetVelocity;
+    public int velocityVersion;
+    
+    public ConnectedBlocks(Block firstBlock, Vector3 fistPosition, Vector3 startingScale)
+    {
+        blocks = new List<Tuple<Block, Vector3, Vector3>>();
+        blocks.Add(new Tuple<Block, Vector3, Vector3>(firstBlock, fistPosition, Vector3.one));
+        startScale = startingScale;
+        firstBlock.myController = this;
+        firstBlock.myBlockID = 0;
+    }
+
+    public void SyncBlocks(int blockId)
+    {
+        for (int i = 0; i < blocks.Count; i++)
+        {
+            if (i == blockId)
+            {
+                continue;
+            }
+
+            /*blocks[i].Item1.transform.position = new Vector3(
+                ((blocks[blockId].Item1.transform.position.x - blocks[blockId].Item2.x) / blocks[i].Item3.x) *
+                blocks[blockId].Item3.x + blocks[blockId].Item2.x,
+                ((blocks[blockId].Item1.transform.position.y - blocks[blockId].Item2.y) / blocks[i].Item3.y) *
+                blocks[blockId].Item3.y + blocks[blockId].Item2.y, 0);*/
+            //blocks[i].Item1.myRigidbody2D.linearVelocity = blocks[blockId].Item1.myRigidbody2D.linearVelocity * blocks[i].Item3;
+            blocks[i].Item1.CheckTargetVelocity();
+        }
+    }
+    
+    public bool CheckNewVelocity(Vector3 newVelocity)
+    {
+        foreach (Tuple<Block, Vector3, Vector3> block in blocks)
+        {
+            if (!block.Item1.CheckNewVelocity(newVelocity))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

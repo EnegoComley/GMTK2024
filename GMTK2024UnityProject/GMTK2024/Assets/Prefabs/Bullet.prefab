@@ -79,8 +79,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 98
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.29376745, g: 1, b: 0, a: 1}
+  m_Sprite: {fileID: -2712454104627450637, guid: 9d95733b6fa399f43970e2fa759f37e9, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -138,7 +138,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.0001
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 0
@@ -151,7 +151,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
 --- !u!114 &3401441038061296405
 MonoBehaviour:
@@ -166,8 +166,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   electricityType: -1
-  bulletSprites: []
-  electrifierSprites:
-  - {fileID: 21300000, guid: 9b030be6e8e18524184d60e7fa60b91c, type: 3}
+  bulletSprites:
+  - {fileID: 1302723820812287101, guid: 1fe09fb0e2977ab438f54c261c52c172, type: 3}
+  - {fileID: -9106275301997704921, guid: f4e3f7bbae0591149a3052866e3419f2, type: 3}
+  electrifierTags:
+  - Electric Green
+  - Electric Red
   corrosionTiles:
-  - {fileID: 11400000, guid: c54b6b976ad94444a95c6d05feff5ef5, type: 2}
+  - {fileID: 11400000, guid: 65fedfccb24384b418c4518844527b27, type: 2}
+  - {fileID: 11400000, guid: e8653bb3585d23c449a0a03d1b58620c, type: 2}

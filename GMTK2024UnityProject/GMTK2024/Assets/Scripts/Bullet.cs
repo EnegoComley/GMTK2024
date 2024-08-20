@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour
     public LinkedDepthListNode currentNode;
     public int electricityType = -1;
     public Sprite[] bulletSprites;
-    public Sprite[] electrifierSprites;
+    public String[] electrifierTags;
     public TileBase[] corrosionTiles;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -47,10 +47,10 @@ public class Bullet : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Bullet") || collision.gameObject.CompareTag("Corrosion"))
+        if (collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Bullet"))
         {
             Destroy(gameObject);
-        } else if (collision.gameObject.CompareTag("Wall"))
+        } else if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("Block") || collision.gameObject.CompareTag("Corrosion"))
         {
             myRigidbody2D.linearVelocity = Vector2.Reflect(-collision.relativeVelocity, collision.contacts[0].normal).normalized * 10 * currentNode.currentFractalScale;
         }
@@ -59,19 +59,18 @@ public class Bullet : MonoBehaviour
     
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (collider.gameObject.CompareTag("Fire"))
+        if (collider.gameObject.CompareTag("Fire") || collider.gameObject.CompareTag(electrifierTags[0]) || collider.gameObject.CompareTag(electrifierTags[1]))
         {
-            Sprite collisionSprite = collider.gameObject.GetComponent<SpriteRenderer>().sprite;
-            for (int i = 0; i < electrifierSprites.Length; i++)
+            for (int i = 0; i < electrifierTags.Length; i++)
             {
-                if (collisionSprite == electrifierSprites[i])
+                if (collider.gameObject.CompareTag(electrifierTags[i]))
                 {
                     electricityType = i;
                     break;
                 }
             }
             
-            gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+            gameObject.GetComponent<SpriteRenderer>().sprite = bulletSprites[electricityType];
         }
     }
 }

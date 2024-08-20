@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Name: RedCorrosion
+  m_EditorClassIdentifier: 
+  m_AnimatedSprites:
+  - {fileID: -3739957133524300147, guid: cfc7580a33de5a14a9552412a6c06d5a, type: 3}
+  - {fileID: 4009355068965086491, guid: 781cda504e48229478864840e3a98fb6, type: 3}
+  - {fileID: -5776421600631150107, guid: e8cd63a1ef067d84a8339a855a48232b, type: 3}
+  - {fileID: 3410439384014351281, guid: 6937caed6f559ee4ab8772463ee3e2b9, type: 3}
+  - {fileID: -15056097725527025, guid: 9382ce4285049154b9fcc5494d59072c, type: 3}
+  - {fileID: -1303488210474810115, guid: aede8de64d5505c4c89588c29312127e, type: 3}
+  - {fileID: 8486031539342236817, guid: 1141a8ff16ee6cd469c9d1aefc2e9117, type: 3}
+  - {fileID: -3181438773050836323, guid: 0df7b3ec22119624682e1062cae12b6a, type: 3}
+  - {fileID: -2870398155833419731, guid: b7b61334eb9d77644bf657b7af3556c8, type: 3}
+  m_MinSpeed: 3
+  m_MaxSpeed: 5
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 2
+  m_TileAnimationFlags: 0
